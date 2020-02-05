@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+data:
+  mosquitto.conf: |
+    # Config file for mosquitto
+    user mosquitto
+
+    retry_interval 20
+    sys_interval 10
+    max_inflight_messages 40
+    max_queued_messages 200
+    queue_qos0_messages false
+    message_size_limit 0
+    allow_zero_length_clientid true
+    persistent_client_expiration 3m
+    allow_duplicate_messages false
+    autosave_interval 60
+    autosave_on_changes false
+
+    # Persistence configuration
+    persistence true
+    persistence_location /mqtt/data/
+
+    # Logging
+    connection_messages true
+    log_dest stderr
+    log_dest stdout
+    log_dest file /mqtt/log/mosquitto.log
+    log_type error
+    log_type warning
+    log_type notice
+    log_type information
+    log_type all
+    log_type debug
+    log_timestamp true
+
+    # Listeners
+    listener 1883
+    #listener 8883
+  mosquitto.acl: |
+    # This affects access control for clients with no username.
+    topic read $SYS/#
+
+    # This affects all clients.
+    pattern write $SYS/broker/connection/%c/state
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mosquitto
+    openshift.io/deployment-config.name: mosquitto
+  name: mosquitto
+  namespace: myproject
+spec:
+  selector:
+    matchLabels:
+      app: mosquitto
+  replicas: 1
+  template:
+    metadata:
+      name: mosquitto
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+      - name: mostquitto
+        image: toke/mosquitto
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 1883
+          protocol: TCP
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 0.5
+        volumeMounts:
+        - mountPath: /mqtt/config
+          name: mosquitto-volume-1
+        - mountPath: /mqtt/data
+          name: mosquitto-volume-2
+        - mountPath: /mqtt/log
+          name: mosquitto-volume-3
+      volumes:
+      - name: mosquitto-volume-1
+        configMap:
+          name: mosquitto-config
+          items:
+          - key: mosquitto.conf
+            path: mosquitto.conf
+      - emptyDir: {}
+        name: mosquitto-volume-2
+      - emptyDir: {}
+        name: mosquitto-volume-3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mosquitto
+  name: mosquitto
+spec:
+  ports:
+  - name: mqtt
+    port: 1883
+  loadBalancerIP:
+  selector:
+    name: mosquitto
+  type: LoadBalancer
+
