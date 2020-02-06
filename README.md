@@ -28,4 +28,4 @@ When you want to connect to the Mosquitto broker, be sure to specify the port:
 
 	$ node node_modules/mqtt/mqtt.js pub -h $(minishift ip) -t "test/blatt" -m '{"test": "blatt"}' -p 32342 -v
 
-
+More info at: https://bigredstack.com/run-mosquitto-mqtt-broker-on-red-hat-openshift/ 
