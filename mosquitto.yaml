@@ -15,6 +15,7 @@ data:
     queue_qos0_messages false
     message_size_limit 0
     allow_zero_length_clientid true
+    allow_anonymous true
     persistent_client_expiration 3m
     allow_duplicate_messages false
     autosave_interval 60
