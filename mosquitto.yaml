@@ -23,7 +23,7 @@ data:
 
     # Persistence configuration
     persistence true
-    persistence_location /mqtt/data/
+    persistence_location /tmp/
 
     # Logging
     connection_messages true
@@ -41,12 +41,6 @@ data:
     # Listeners
     listener 1883
     #listener 8883
-  mosquitto.acl: |
-    # This affects access control for clients with no username.
-    topic read $SYS/#
-
-    # This affects all clients.
-    pattern write $SYS/broker/connection/%c/state
 ---
 apiVersion: apps/v1
 kind: Deployment
